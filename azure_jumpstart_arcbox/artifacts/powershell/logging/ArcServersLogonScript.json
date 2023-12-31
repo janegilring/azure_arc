@@ -1,0 +1,21 @@
+{
+    "General": {
+        "ScriptName": "ArcServersLogonScript",
+        "EmailonError": false,
+        "EmailonWarning": false
+    },
+    "Logging": {
+        "Name": "logfile",
+        "InstanceName": "<ArcServersLogonScript>",
+        "FilePath": "$PSScriptRoot\\Logs\\ArcServersLogonScript-%date%.csv",
+        "FileType": "CSV",
+        "LogRotatePath": "$PSScriptRoot\\Logs\\ArcServersLogonScript-*.csv",
+        "LogRetentionTime": "1d",
+        "Wait": true,
+        "Enabled": true
+    },
+    "Debugging": {
+        "VerbosePreference": "SilentlyContinue",
+        "LogDebugInfo": true
+    }
+}
