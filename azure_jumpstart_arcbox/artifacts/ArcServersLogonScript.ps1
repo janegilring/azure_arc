@@ -62,7 +62,7 @@ $paramSetPSFLoggingProvider = @{
     InstanceName = $config.Logging.InstanceName
     WorkspaceId  = $loganalyticsws.ResourceId
     SharedKey    = $loganalyticskeys.PrimarySharedKey
-    LogType      = 'ArcBox'
+    LogType      = 'Message'
     Enabled      = $true
 }
 Set-PSFLoggingProvider @paramSetPSFLoggingProvider
