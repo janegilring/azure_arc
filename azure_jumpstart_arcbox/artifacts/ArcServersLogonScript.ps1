@@ -53,6 +53,16 @@ $paramSetPSFLoggingProvider = @{
 [System.Management.Automation.ActionPreference]$VerbosePreference = $config.Debugging.VerbosePreference # Use 'Continue' to Enable Verbose Messages and Use 'SilentlyContinue' to reset back to default.
 [bool]$LogDebugInfo = $config.Debugging.LogDebugInfo # Writes Extra Information to the log if $true.
 
+if ($config.Logging.Enabled)
+{
+    Set-PSFLoggingProvider @paramSetPSFLoggingProvider
+    Write-PSFMessage -Level Important -Message "---SCRIPT BEGIN---"
+    Write-PSFMessage -Message "PowerShell Version: $($PSVersionTable.PSVersion.ToString()), $($PSVersionTable.PSEdition.ToString())$(if([Environment]::Is64BitProcess){$(", 64Bit")}else{$(", 32Bit")})"
+    foreach ($moduleInfo in Get-Module)
+    {
+        Write-PSFMessage -Message "$($moduleInfo.Name) Module Version: $($moduleInfo.Version)"
+    }
+}
 
 $loganalyticsws = Get-AzOperationalInsightsWorkspace -ResourceGroupName $env:resourceGroup -Name arcbox-la
 $loganalyticskeys = Get-AzOperationalInsightsWorkspaceSharedKey -ResourceGroupName $env:resourceGroup -Name arcbox-la
@@ -66,17 +76,6 @@ $paramSetPSFLoggingProvider = @{
     Enabled      = $true
 }
 Set-PSFLoggingProvider @paramSetPSFLoggingProvider
-
-if ($config.Logging.Enabled)
-{
-    Set-PSFLoggingProvider @paramSetPSFLoggingProvider
-    Write-PSFMessage -Level Important -Message "---SCRIPT BEGIN---"
-    Write-PSFMessage -Message "PowerShell Version: $($PSVersionTable.PSVersion.ToString()), $($PSVersionTable.PSEdition.ToString())$(if([Environment]::Is64BitProcess){$(", 64Bit")}else{$(", 32Bit")})"
-    foreach ($moduleInfo in Get-Module)
-    {
-        Write-PSFMessage -Message "$($moduleInfo.Name) Module Version: $($moduleInfo.Version)"
-    }
-}
 
 Start-Transcript -Path $logFilePath -Force -ErrorAction SilentlyContinue
 
