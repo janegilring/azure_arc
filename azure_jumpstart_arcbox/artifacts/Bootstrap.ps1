@@ -98,6 +98,7 @@ New-Item -Path $Env:tempDir -ItemType directory -Force
 New-Item -Path $Env:agentScript -ItemType directory -Force
 New-Item -Path $Env:ArcBoxDataOpsDir -ItemType directory -Force
 New-Item -Path $Env:ArcBoxTestsDir -ItemType directory -Force
+New-Item -Path $Env:ArcBoxDir\powershell\logging -ItemType directory -Force
 
 Start-Transcript -Path $Env:ArcBoxLogsDir\Bootstrap.log
 
@@ -125,7 +126,7 @@ Resize-Partition -DriveLetter C -Size $(Get-PartitionSupportedSize -DriveLetter 
 Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force
 
 Install-Module -Name Microsoft.PowerShell.PSResourceGet -Force
-$modules = @("Az", "Az.ConnectedMachine", "Azure.Arc.Jumpstart.Common", "Posh-SSH", "Pester")
+$modules = @("Az", "Az.ConnectedMachine", "Azure.Arc.Jumpstart.Common", "Posh-SSH", "Pester", "PSFramework")
 
 foreach ($module in $modules) {
     Install-PSResource -Name $module -Scope AllUsers -Quiet -AcceptLicense -TrustRepository
@@ -174,6 +175,7 @@ Invoke-WebRequest ($templateBaseUrl + "artifacts/tests/common.tests.ps1") -OutFi
 Invoke-WebRequest ($templateBaseUrl + "artifacts/WinGet.ps1") -OutFile $Env:ArcBoxDir\WinGet.ps1
 Invoke-WebRequest ($templateBaseUrl + "../tests/GHActionDeploy.ps1") -OutFile "$Env:ArcBoxDir\GHActionDeploy.ps1"
 Invoke-WebRequest ($templateBaseUrl + "../tests/OpenSSHDeploy.ps1") -OutFile "$Env:ArcBoxDir\OpenSSHDeploy.ps1"
+Invoke-WebRequest ($templateBaseUrl + "artifacts/powershell/logging/ArcServersLogonScript.json") -OutFile "$Env:ArcBoxDir\powershell\logging\ArcServersLogonScript.json"
 
 # Workbook template
 if ($flavor -eq "ITPro") {
