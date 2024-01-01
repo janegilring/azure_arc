@@ -561,3 +561,6 @@ Copy-Item -Path "$Env:ArcBoxLogsDir\*.log" -Destination $LogsBundleTempDirectory
 Compress-Archive -Path "$LogsBundleTempDirectory\*.log" -DestinationPath "$Env:ArcBoxLogsDir\LogsBundle-$RandomString.zip" -PassThru
 
 Stop-Transcript
+
+# The asynchronous nature of PSFramework might also mean, that if the process is closed before the logging is done, messages might be lost. To avoid this, Wait-PSFMessage can be used to wait for all messages to be written to the log.
+Wait-PSFMessage
