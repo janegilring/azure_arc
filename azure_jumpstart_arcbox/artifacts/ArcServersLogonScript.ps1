@@ -188,6 +188,7 @@ if ($Env:flavor -ne "DevOps") {
     # Register Azure providers
     Write-Header "Registering Providers"
     @("Microsoft.HybridCompute","Microsoft.HybridConnectivity","Microsoft.GuestConfiguration","Microsoft.AzureArcData") | ForEach-Object -Parallel {
+        $null = az login --service-principal --username $env:spnClientId --password $env:ClientSecret --tenant $env:TenantId
         az provider register --namespace $PSItem --wait --only-show-errors
     }
 
