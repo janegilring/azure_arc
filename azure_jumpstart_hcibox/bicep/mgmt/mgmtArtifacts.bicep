@@ -12,7 +12,7 @@ var security = {
   galleryName: 'Security'
 }
 
-var automationAccountName = 'HCIBox-Automation-${uniqueString(resourceGroup().id)}'
+var automationAccountName = '${workspaceName}-Automation-${uniqueString(resourceGroup().id)}'
 var automationAccountLocation = ((location == 'eastus') ? 'eastus2' : ((location == 'eastus2') ? 'eastus' : location))
 
 resource workspace 'Microsoft.OperationalInsights/workspaces@2021-06-01' = {

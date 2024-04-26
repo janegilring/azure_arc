@@ -88,12 +88,12 @@
     FabricSwitch                         = "vSwitch-Fabric"
     FabricNIC                            = "FABRIC"
     ClusterVSwitchName                   = "hciSwitch"
-    ClusterName                          = "hciboxcluster"
+    ClusterName                          = "hcicluster"
     WACVMName                            = "AdminCenter"
     ClusterSharedVolumePath              = "C:\ClusterStorage\S2D_vDISK1"
     LCMDeployUsername                    = "HCIBoxDeployUser"
     LCMADOUName                          = "hcioudocs"
-    LCMDeploymentPrefix                  = "hcibox"
+    LCMDeploymentPrefix                  = "hci"
 
     # ProductKeys
     GUIProductKey                        = "WX4NM-KYWYW-QJJR4-XV3QB-6VM33"        # Product key for Windows Server 2019 (Desktop Experience) Datacenter Installation
@@ -176,7 +176,7 @@
     WACport                              = 443
 
     # AKS and Resource bridge variables
-    rbCustomLocationName                 = "jumpstart"
+    rbCustomLocationName                 = "on-prem1"
     AKSworkloadClusterName               = "hcibox-aks" # lowercase only
     AKSvnetname                          = "akshcivnet"
     AKSNodeStartIP                       = "10.10.0.101"

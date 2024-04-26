@@ -11,6 +11,9 @@ param spnTenantId string
 @description('Azure AD object id for your Microsoft.AzureStackHCI resource provider')
 param spnProviderId string
 
+@description('Name of the VNet')
+param HCIInstanceName string = 'HCI-clu-01-'
+
 @description('Username for Windows account')
 param windowsAdminUsername string
 
@@ -52,7 +55,7 @@ var templateBaseUrl = 'https://raw.githubusercontent.com/${githubAccount}/azure_
 module mgmtArtifactsAndPolicyDeployment 'mgmt/mgmtArtifacts.bicep' = {
   name: 'mgmtArtifactsAndPolicyDeployment'
   params: {
-    workspaceName: logAnalyticsWorkspaceName
+    workspaceName: '${HCIInstanceName}${logAnalyticsWorkspaceName}'
     location: location
   }
 }
@@ -61,6 +64,7 @@ module networkDeployment 'network/network.bicep' = {
   name: 'networkDeployment'
   params: {
     deployBastion: deployBastion
+    HCIInstanceName: HCIInstanceName
     location: location
   }
 }
@@ -69,12 +73,15 @@ module storageAccountDeployment 'mgmt/storageAccount.bicep' = {
   name: 'stagingStorageAccountDeployment'
   params: {
     location: location
+    HCIInstanceName: HCIInstanceName
   }
 }
 
 module hostDeployment 'host/host.bicep' = {
   name: 'hostVmDeployment'
   params: {
+    HCIInstanceName: HCIInstanceName
+    vmName: '${HCIInstanceName}host'
     windowsAdminUsername: windowsAdminUsername
     windowsAdminPassword: windowsAdminPassword
     spnClientId: spnClientId

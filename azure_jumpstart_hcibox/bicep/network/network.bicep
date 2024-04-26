@@ -1,5 +1,5 @@
 @description('Name of the VNet')
-param virtualNetworkName string = 'HCIBox-VNet'
+param HCIInstanceName string = 'HCI-clu-01-'
 
 @description('Name of the subnet in the virtual network')
 param subnetName string = 'HCIBox-Subnet'
@@ -10,22 +10,14 @@ param location string = resourceGroup().location
 @description('Choice to deploy Bastion to connect to the client VM')
 param deployBastion bool = false
 
-@description('Name of the Network Security Group')
-param networkSecurityGroupName string = 'HCIBox-NSG'
-
-@description('Name of the Bastion Network Security Group')
-param bastionNetworkSecurityGroupName string = 'HCIBox-Bastion-NSG'
-
 var addressPrefix = '172.16.0.0/16'
 var subnetAddressPrefix = '172.16.1.0/24'
 var bastionSubnetName = 'AzureBastionSubnet'
 var bastionSubnetRef = '${arcVirtualNetwork.id}/subnets/${bastionSubnetName}'
-var bastionName = 'HCIBox-Bastion'
 var bastionSubnetIpPrefix = '172.16.3.64/26'
-var bastionPublicIpAddressName = '${bastionName}-PIP'
 
 resource arcVirtualNetwork 'Microsoft.Network/virtualNetworks@2021-03-01' = {
-  name: virtualNetworkName
+  name: '${HCIInstanceName}VNet'
   location: location
   properties: {
     addressSpace: {
@@ -71,17 +63,17 @@ resource arcVirtualNetwork 'Microsoft.Network/virtualNetworks@2021-03-01' = {
 }
 
 resource networkSecurityGroup 'Microsoft.Network/networkSecurityGroups@2021-03-01' = {
-  name: networkSecurityGroupName
+  name: '${HCIInstanceName}NSG'
   location: location
   properties: {
     securityRules: [
-      
+
     ]
   }
 }
 
 resource bastionNetworkSecurityGroup 'Microsoft.Network/networkSecurityGroups@2021-05-01' = if (deployBastion == true) {
-  name: bastionNetworkSecurityGroupName
+  name: '${HCIInstanceName}Bastion-NSG'
   location: location
   properties: {
     securityRules: [
@@ -206,7 +198,7 @@ resource bastionNetworkSecurityGroup 'Microsoft.Network/networkSecurityGroups@20
 }
 
 resource publicIpAddress 'Microsoft.Network/publicIPAddresses@2021-05-01' = if (deployBastion == true) {
-  name: bastionPublicIpAddressName
+  name: '${HCIInstanceName}Bastion-PIP'
   location: location
   properties: {
     publicIPAllocationMethod: 'Static'
@@ -219,7 +211,7 @@ resource publicIpAddress 'Microsoft.Network/publicIPAddresses@2021-05-01' = if (
 }
 
 resource bastionHost 'Microsoft.Network/bastionHosts@2021-05-01' = if (deployBastion == true) {
-  name: bastionName
+  name: '${HCIInstanceName}Bastion'
   location: location
   properties: {
     ipConfigurations: [

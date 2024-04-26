@@ -7,13 +7,17 @@
 ])
 param storageAccountType string = 'Standard_LRS'
 
+@description('Name of the VNet')
+param HCIInstanceName string = '01'
+
 @description('Location for all resources.')
 param location string = resourceGroup().location
 
-var storageAccountName = 'hcibox${uniqueString(resourceGroup().id)}'
-
+var storageAccountName = '${HCIInstanceName}${uniqueString(resourceGroup().id)}'
+var modifiedStorageAccountName = replace(replace(storageAccountName, '-', ''), '_', '')
+var modifiedStorageAccountNameLowerCase = toLower(modifiedStorageAccountName)
 resource storageAccount 'Microsoft.Storage/storageAccounts@2021-06-01' = {
-  name: storageAccountName
+  name: modifiedStorageAccountNameLowerCase
   location: location
   sku: {
     name: storageAccountType
@@ -24,4 +28,4 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2021-06-01' = {
   }
 }
 
-output storageAccountName string = storageAccountName
+output storageAccountName string = modifiedStorageAccountNameLowerCase

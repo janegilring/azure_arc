@@ -1,5 +1,8 @@
 @description('The name of your Virtual Machine')
-param vmName string = 'HCIBox-Client'
+param vmName string = 'HCI-Host-01'
+
+@description('Name of the VNet')
+param HCIInstanceName string = 'HCI-clu-01-'
 
 @description('Username for the Virtual Machine')
 param windowsAdminUsername string = 'arcdemo'
@@ -20,7 +23,7 @@ param location string = resourceGroup().location
 param subnetId string
 
 param resourceTags object = {
-  Project: 'jumpstart_HCIBox'
+  Project: 'HCI_demo'
 }
 
 @description('Client id of the service principal')
@@ -70,8 +73,8 @@ param autoDeployClusterResource bool = false
 param autoUpgradeClusterResource bool = false
 
 var encodedPassword = base64(windowsAdminPassword)
-var bastionName = 'HCIBox-Bastion'
-var publicIpAddressName = deployBastion == false ? '${vmName}-PIP' : '${bastionName}-PIP'
+var bastionName = '${HCIInstanceName}Bastion'
+var publicIpAddressName = deployBastion == false ? '${vmName}PIP' : '${bastionName}-PIP'
 var networkInterfaceName = '${vmName}-NIC'
 var osDiskType = 'Premium_LRS'
 var PublicIPNoBastion = {
@@ -136,7 +139,7 @@ resource vm 'Microsoft.Compute/virtualMachines@2022-03-01' = {
       }
       dataDisks: [
         {
-          name: 'ASHCIHost001_DataDisk_0'
+          name: '${vmName}_DataDisk_0'
           diskSizeGB: 256
           createOption: 'Empty'
           lun: 0
@@ -147,7 +150,7 @@ resource vm 'Microsoft.Compute/virtualMachines@2022-03-01' = {
           }
         }
         {
-          name: 'ASHCIHost001_DataDisk_1'
+          name: '${vmName}_DataDisk_1'
           diskSizeGB: 256
           createOption: 'Empty'
           lun: 1
@@ -158,7 +161,7 @@ resource vm 'Microsoft.Compute/virtualMachines@2022-03-01' = {
           }
         }
         {
-          name: 'ASHCIHost001_DataDisk_2'
+          name: '${vmName}_DataDisk_2'
           diskSizeGB: 256
           createOption: 'Empty'
           lun: 2
@@ -169,7 +172,7 @@ resource vm 'Microsoft.Compute/virtualMachines@2022-03-01' = {
           }
         }
         {
-          name: 'ASHCIHost001_DataDisk_3'
+          name: '${vmName}_DataDisk_3'
           diskSizeGB: 256
           createOption: 'Empty'
           lun: 3
@@ -180,7 +183,7 @@ resource vm 'Microsoft.Compute/virtualMachines@2022-03-01' = {
           }
         }
         {
-          name: 'ASHCIHost001_DataDisk_4'
+          name: '${vmName}_DataDisk_4'
           diskSizeGB: 256
           createOption: 'Empty'
           lun: 4
@@ -191,7 +194,7 @@ resource vm 'Microsoft.Compute/virtualMachines@2022-03-01' = {
           }
         }
         {
-          name: 'ASHCIHost001_DataDisk_5'
+          name: '${vmName}_DataDisk_5'
           diskSizeGB: 256
           createOption: 'Empty'
           lun: 5
@@ -202,7 +205,7 @@ resource vm 'Microsoft.Compute/virtualMachines@2022-03-01' = {
           }
         }
         {
-          name: 'ASHCIHost001_DataDisk_6'
+          name:'${vmName}_DataDisk_6'
           diskSizeGB: 256
           createOption: 'Empty'
           lun: 6
@@ -213,7 +216,7 @@ resource vm 'Microsoft.Compute/virtualMachines@2022-03-01' = {
           }
         }
         {
-          name: 'ASHCIHost001_DataDisk_7'
+          name: '${vmName}_DataDisk_7'
           diskSizeGB: 256
           createOption: 'Empty'
           lun: 7
