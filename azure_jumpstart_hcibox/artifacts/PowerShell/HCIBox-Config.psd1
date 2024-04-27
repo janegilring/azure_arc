@@ -64,13 +64,13 @@
 
     NodeHostConfig = @(
         @{
-            Hostname    = "AzSHOST1"
+            Hostname    = "AzSHOST3"
             IP          = "192.168.1.12/24"
             StorageAIP  = "10.71.1.10"
             StorageBIP  = "10.71.2.10"
         },
         @{
-            Hostname    = "AzSHOST2"
+            Hostname    = "AzSHOST4"
             IP          = "192.168.1.13/24"
             StorageAIP  = "10.71.1.11"
             StorageBIP  = "10.71.2.11"
@@ -88,7 +88,7 @@
     FabricSwitch                         = "vSwitch-Fabric"
     FabricNIC                            = "FABRIC"
     ClusterVSwitchName                   = "hciSwitch"
-    ClusterName                          = "hcicluster"
+    ClusterName                          = "hcicluster2"
     WACVMName                            = "AdminCenter"
     ClusterSharedVolumePath              = "C:\ClusterStorage\S2D_vDISK1"
     LCMDeployUsername                    = "HCIBoxDeployUser"
@@ -176,7 +176,7 @@
     WACport                              = 443
 
     # AKS and Resource bridge variables
-    rbCustomLocationName                 = "on-prem1"
+    rbCustomLocationName                 = "on-prem2"
     AKSworkloadClusterName               = "hcibox-aks" # lowercase only
     AKSvnetname                          = "akshcivnet"
     AKSNodeStartIP                       = "10.10.0.101"
