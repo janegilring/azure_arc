@@ -155,7 +155,7 @@ if [[ "$k3sControlPlane" == "true" ]]; then
 
     sudo -u $adminUsername az connectedk8s connect --name $vmName --resource-group $resourceGroup --location $location
     echo "Onboarding the k3s cluster to Azure Arc completed"
-    
+
     # Verify if cluster is connected to Azure Arc successfully
     connectedClusterInfo=$(sudo -u $adminUsername az connectedk8s show --name $vmName --resource-group $resourceGroup)
     echo "Connected cluster info: $connectedClusterInfo"
@@ -165,14 +165,14 @@ if [[ "$k3sControlPlane" == "true" ]]; then
     echo ""
     echo "Enabling Container Insights and Microsoft Defender for Containers cluster extensions"
     echo ""
-    sudo -u $adminUsername az k8s-extension create -n "azuremonitor-containers" --cluster-name $vmName --resource-group $resourceGroup --cluster-type connectedClusters --extension-type Microsoft.AzureMonitor.Containers --configuration-settings logAnalyticsWorkspaceResourceID=$workspaceResourceId --only-show-errors
-    sudo -u $adminUsername az k8s-extension create -n "azure-defender" --cluster-name $vmName --resource-group $resourceGroup --cluster-type connectedClusters --extension-type Microsoft.AzureDefender.Kubernetes --configuration-settings logAnalyticsWorkspaceResourceID=$workspaceResourceId --only-show-errors
+    #sudo -u $adminUsername az k8s-extension create -n "azuremonitor-containers" --cluster-name $vmName --resource-group $resourceGroup --cluster-type connectedClusters --extension-type Microsoft.AzureMonitor.Containers --configuration-settings logAnalyticsWorkspaceResourceID=$workspaceResourceId --only-show-errors
+    #sudo -u $adminUsername az k8s-extension create -n "azure-defender" --cluster-name $vmName --resource-group $resourceGroup --cluster-type connectedClusters --extension-type Microsoft.AzureDefender.Kubernetes --configuration-settings logAnalyticsWorkspaceResourceID=$workspaceResourceId --only-show-errors
 
     # Enabling Azure Policy for Kubernetes on the cluster
     echo ""
     echo "Enabling Azure Policy for Kubernetes on the cluster"
     echo ""
-    sudo -u $adminUsername az k8s-extension create --name "arc-azurepolicy" --cluster-name $vmName --resource-group $resourceGroup --cluster-type connectedClusters --extension-type Microsoft.PolicyInsights --only-show-errors
+    #sudo -u $adminUsername az k8s-extension create --name "arc-azurepolicy" --cluster-name $vmName --resource-group $resourceGroup --cluster-type connectedClusters --extension-type Microsoft.PolicyInsights --only-show-errors
 
 else
     # Downloading k3s control plane details
