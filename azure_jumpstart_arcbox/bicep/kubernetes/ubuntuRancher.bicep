@@ -51,7 +51,7 @@ var publicIpAddressName = '${vmName}-PIP'
 var networkInterfaceName = '${vmName}-NIC'
 var osDiskType = 'Premium_LRS'
 var k3sControlPlane = 'true' // deploy single-node k3s control plane
-var diskSize = (flavor == 'DataOps') ? 512 : 64
+var diskSize = (flavor == 'DataOps') ? 512 : 512
 var numberOfIPAddresses = (flavor == 'DataOps') ? 8 : 5 // The number of IP addresses to create
 
 // Create multiple public IP addresses if deployBastion is false
