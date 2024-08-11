@@ -64,6 +64,17 @@ sudo chmod +x /usr/local/bin/azcopy
 # Authorize azcopy by using a system-wide managed identity
 export AZCOPY_AUTO_LOGIN_TYPE=MSI
 
+# Function to check if dpkg lock is in place
+check_dpkg_lock() {
+    while fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1; do
+        echo "Waiting for other package management processes to complete..."
+        sleep 5
+    done
+}
+
+# Run the lock check before attempting the installation
+check_dpkg_lock
+
 # Installing Azure CLI & Azure Arc extensions
 curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
 
