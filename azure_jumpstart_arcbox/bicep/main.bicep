@@ -35,7 +35,7 @@ param flavor string = 'ITPro'
 param githubAccount string = 'microsoft'
 
 @description('Target GitHub branch')
-param githubBranch string = 'arcbox_3.0'
+param githubBranch string = 'main'
 
 @description('Choice to deploy Bastion to connect to the client VM')
 param deployBastion bool = false
@@ -103,7 +103,7 @@ module ubuntuRancherK3sDataSvcDeployment 'kubernetes/ubuntuRancher.bicep' = if (
   }
 }
 
-module ubuntuRancherK3sDataSvcNodesDeployment 'kubernetes/ubuntuRancherNodes.bicep' = [for i in range(0, k3sClusterNodesCount): if (flavor == 'Full' || flavor == 'DataOps' || flavor == 'DevOps') {
+module ubuntuRancherK3sDataSvcNodesDeployment 'kubernetes/ubuntuRancherNodes.bicep' = [for i in range(0, k3sClusterNodesCount): if (flavor == 'DataOps' || flavor == 'DevOps') {
   name: 'ubuntuRancherK3sDataSvcNodesDeployment-${i}'
   params: {
     sshRSAPublicKey: sshRSAPublicKey
@@ -138,6 +138,25 @@ module ubuntuRancherK3sDeployment 'kubernetes/ubuntuRancher.bicep' = if (flavor 
   }
 }
 
+module ubuntuRancherK3sNodesDeployment 'kubernetes/ubuntuRancherNodes.bicep' = [for i in range(0, k3sClusterNodesCount): if (flavor == 'DevOps') {
+  name: 'ubuntuRancherK3sNodesDeployment-${i}'
+  params: {
+    sshRSAPublicKey: sshRSAPublicKey
+    stagingStorageAccountName: toLower(stagingStorageAccountDeployment.outputs.storageAccountName)
+    logAnalyticsWorkspace: logAnalyticsWorkspaceName
+    templateBaseUrl: templateBaseUrl
+    subnetId: mgmtArtifactsAndPolicyDeployment.outputs.subnetId
+    azureLocation: location
+    flavor: flavor
+    vmName : '${k3sArcClusterName}-Node-0${i}'
+    storageContainerName: toLower(k3sArcClusterName)
+    namingPrefix: namingPrefix
+  }
+  dependsOn: [
+    ubuntuRancherK3sDeployment
+  ]
+}]
+
 module clientVmDeployment 'clientVm/clientVm.bicep' = {
   name: 'clientVmDeployment'
   params: {
@@ -171,6 +190,8 @@ module clientVmDeployment 'clientVm/clientVm.bicep' = {
   }
   dependsOn: [
     updateVNetDNSServers
+    ubuntuRancherK3sDataSvcDeployment
+    ubuntuRancherK3sDeployment
   ]
 }
 

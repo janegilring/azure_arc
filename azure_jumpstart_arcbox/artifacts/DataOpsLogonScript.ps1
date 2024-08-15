@@ -13,6 +13,7 @@ $aksdrArcClusterName = ($Env:aksdrArcClusterName).toLower()
 
 $clusters = @(
     [pscustomobject]@{clusterName = $Env:k3sArcDataClusterName; dataController = "$k3sArcDataClusterName-dc" ; customLocation = "$k3sArcDataClusterName-cl" ; storageClassName = 'longhorn' ; licenseType = 'LicenseIncluded' ; context = 'k3s' ; kubeConfig = "C:\Users\$Env:adminUsername\.kube\config-k3s-data" }
+    [pscustomobject]@{clusterName = $Env:k3sArcDataClusterName; dataController = "$k3sArcDataClusterName-dc" ; customLocation = "$k3sArcDataClusterName-cl" ; storageClassName = 'longhorn' ; licenseType = 'LicenseIncluded' ; context = 'k3s' ; kubeConfig = "C:\Users\$Env:adminUsername\.kube\config-k3s-data" }
     [pscustomobject]@{clusterName = $Env:aksArcClusterName ; dataController = "$aksArcClusterName-dc" ; customLocation = "$aksArcClusterName-cl" ; storageClassName = 'managed-premium' ; licenseType = 'LicenseIncluded' ; context = 'aks' ; kubeConfig = "C:\Users\$Env:adminUsername\.kube\config-aks" }
     [pscustomobject]@{clusterName = $Env:aksdrArcClusterName ; dataController = "$aksdrArcClusterName-dc" ; customLocation = "$aksdrArcClusterName-cl" ; storageClassName = 'managed-premium' ; licenseType = 'DisasterRecovery' ; context = 'aks-dr'; kubeConfig = "C:\Users\$Env:adminUsername\.kube\config-aksdr" }
 )
@@ -197,8 +198,7 @@ foreach ($cluster in $clusters) {
                 --resource-group $Env:resourceGroup `
                 --location $Env:azureLocation `
                 --correlation-id "6038cc5b-b814-4d20-bcaa-0f60392416d5" `
-                --kube-config $cluster.kubeConfig `
-                --distribution $cluster.distribution
+                --kube-config $cluster.kubeConfig
         }
         catch {
             <#Do this if a terminating exception happens#>
