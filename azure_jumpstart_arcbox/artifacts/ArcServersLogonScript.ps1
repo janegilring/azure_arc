@@ -90,8 +90,15 @@ while ($true) {
     Start-Sleep -Seconds 60
 }
 
+# Complete all BITS jobs that are in the 'Transferred' state
+$jobs = Get-BitsTransfer -AllUsers | Where-Object { $_.JobState -eq 'Transferred' }
+
+foreach ($job in $jobs) {
+    Write-Output "Completing BITS transfer for job: $($job.DisplayName)"
+    Complete-BitsTransfer -BitsJob $job
+}
+
 Write-Output "All downloads completed."
-dir 'F:\Virtual Machines\' -File | Select-Object Name, Length, LastWriteTime
 
 # Create Windows Terminal desktop shortcut
 $WshShell = New-Object -comObject WScript.Shell
