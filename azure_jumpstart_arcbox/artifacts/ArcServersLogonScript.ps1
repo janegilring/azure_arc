@@ -17,8 +17,52 @@ $resourceGroup = $env:resourceGroup
 $resourceTags = $env:resourceTags
 $namingPrefix = $env:namingPrefix
 
-# Moved VHD storage account details here to keep only in place to prevent duplicates.
-$vhdSourceFolder = "https://jumpstartprodsg.blob.core.windows.net/arcbox/prod/*"
+# Define destination directory
+$destinationDir = $Env:ArcBoxVMDir
+
+# Define new source URLs and file names
+$files = @{
+    "https://aka.ms/arcboxsql-preprod" = "ArcBox-SQL.vhdx"
+    "https://aka.ms/arcboxw2k22-preprod" = "ArcBox-Win2K22.vhdx"
+    "https://aka.ms/arcboxw2k19-preprod" = "ArcBox-Win2K19.vhdx"
+    "https://aka.ms/arcboxub1-preprod" = "ArcBox-Ubuntu-01.vhdx"
+    "https://aka.ms/arcboxub2-preprod" = "ArcBox-Ubuntu-02.vhdx"
+}
+
+Write-Output "Starting parallel downloads of VHDX files using Start-BitsTransfer. This can take some time, hold tight..."
+
+# Start parallel downloads
+foreach ($url in $files.Keys) {
+    $destinationPath = Join-Path $destinationDir $files[$url]
+    Write-Output "Starting download of $url to $destinationPath"
+    Start-BitsTransfer -Source $url -Destination $destinationPath -Priority High -Asynchronous
+}
+
+Write-Output "All downloads initiated. Monitoring progress..."
+
+# Monitor the progress of all BITS jobs
+while ($true) {
+    $jobs = Get-BitsTransfer -AllUsers
+
+    # Check if any job is still in progress
+    $inProgress = $false
+    foreach ($job in $jobs) {
+        if ($job.JobState -eq 'Transferring') {
+            $inProgress = $true
+            break
+        }
+    }
+
+    # Exit the loop if no jobs are in progress
+    if (-not $inProgress) {
+        break
+    }
+
+    # Wait a short time before checking again
+    Start-Sleep -Seconds 10
+}
+
+Write-Output "All downloads completed."
 
 # Archive existing log file and create new one
 $logFilePath = "$Env:ArcBoxLogsDir\ArcServersLogonScript.log"
@@ -164,10 +208,10 @@ if ($Env:flavor -ne "DevOps") {
     # Verify if VHD files already downloaded especially when re-running this script
     if (!(Test-Path $SQLvmvhdPath)) {
         <# Action when all if and elseif conditions are false #>
-        $Env:AZCOPY_BUFFER_GB = 4
+        #$Env:AZCOPY_BUFFER_GB = 4
         # Other ArcBox flavors does not have an azcopy network throughput capping
-        Write-Output "Downloading nested VMs VHDX file for SQL. This can take some time, hold tight..."
-        azcopy cp $vhdSourceFolder --include-pattern "ArcBox-SQL.vhdx" $Env:ArcBoxVMDir --check-length=false --log-level=ERROR
+        #Write-Output "Downloading nested VMs VHDX file for SQL. This can take some time, hold tight..."
+        #azcopy cp $vhdSourceFolder --include-pattern "ArcBox-SQL.vhdx" $Env:ArcBoxVMDir --check-length=false --log-level=ERROR
     }
 
     # Create the nested VMs if not already created
@@ -392,9 +436,9 @@ $payLoad = @"
         # Verify if VHD files already downloaded especially when re-running this script
         if (!((Test-Path $win2k19vmvhdPath) -and (Test-Path $Win2k22vmvhdPath) -and (Test-Path $Ubuntu01vmvhdPath) -and (Test-Path $Ubuntu02vmvhdPath))) {
             <# Action when all if and elseif conditions are false #>
-            $Env:AZCOPY_BUFFER_GB = 4
-            Write-Output "Downloading nested VMs VHDX files. This can take some time, hold tight..."
-            azcopy cp $vhdSourceFolder $Env:ArcBoxVMDir --include-pattern "ArcBox-Win2K19.vhdx;ArcBox-Win2K22.vhdx;ArcBox-Ubuntu-01.vhdx;ArcBox-Ubuntu-02.vhdx;" --recursive=true --check-length=false --log-level=ERROR
+            #$Env:AZCOPY_BUFFER_GB = 4
+            #Write-Output "Downloading nested VMs VHDX files. This can take some time, hold tight..."
+            #azcopy cp $vhdSourceFolder $Env:ArcBoxVMDir --include-pattern "ArcBox-Win2K19.vhdx;ArcBox-Win2K22.vhdx;ArcBox-Ubuntu-01.vhdx;ArcBox-Ubuntu-02.vhdx;" --recursive=true --check-length=false --log-level=ERROR
         }
 
         # Create the nested VMs if not already created
