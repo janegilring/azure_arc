@@ -35,7 +35,7 @@ Write-Output "Starting parallel downloads of VHDX files using Start-BitsTransfer
 foreach ($url in $files.Keys) {
     $destinationPath = Join-Path $destinationDir $files[$url]
     Write-Output "Starting download of $url to $destinationPath"
-    Start-BitsTransfer -Source $url -Destination $destinationPath -Priority High -Asynchronous
+    Start-BitsTransfer -Source $url -Destination $destinationPath -Priority High -Asynchronous -DisplayName $files[$url]
 }
 
 Write-Output "All downloads initiated. Monitoring progress..."
@@ -47,7 +47,7 @@ while ($true) {
     # Check if any job is still in progress
     $inProgress = $false
     foreach ($job in $jobs) {
-        if ($job.JobState -eq 'Transferring') {
+        if ($job.JobState -eq 'Transferring' -or $job.JobState -eq 'Queued') {
             $inProgress = $true
             break
         }
@@ -58,8 +58,13 @@ while ($true) {
         break
     }
 
+    Get-Date
+    Write-Output "Waiting for downloads to complete..."
+
+    Get-BitsTransfer | Format-Table DisplayName, JobState, @{Name="Transferred (GB)"; Expression={$_.BytesTransferred / 1GB}}, @{Name="Progress"; Expression={"{0:P2}" -f ($_.BytesTransferred / $_.BytesTotal)}} #@{Name="Total (GB)"; Expression={"{0:P2}" -f ($_.BytesTotal / 1GB)}}
+
     # Wait a short time before checking again
-    Start-Sleep -Seconds 10
+    Start-Sleep -Seconds 60
 }
 
 Write-Output "All downloads completed."
