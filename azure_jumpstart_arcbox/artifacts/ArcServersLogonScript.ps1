@@ -17,6 +17,29 @@ $resourceGroup = $env:resourceGroup
 $resourceTags = $env:resourceTags
 $namingPrefix = $env:namingPrefix
 
+# Archive existing log file and create new one
+$logFilePath = "$Env:ArcBoxLogsDir\ArcServersLogonScript.log"
+if (Test-Path $logFilePath) {
+    $archivefile = "$Env:ArcBoxLogsDir\ArcServersLogonScript-" + (Get-Date -Format "yyyyMMddHHmmss")
+    Rename-Item -Path $logFilePath -NewName $archivefile -Force
+}
+
+Start-Transcript -Path $logFilePath -Force -ErrorAction SilentlyContinue
+
+# Remove registry keys that are used to automatically logon the user (only used for first-time setup)
+$registryPath = "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon"
+$keys = @("AutoAdminLogon", "DefaultUserName", "DefaultPassword")
+
+foreach ($key in $keys) {
+    try {
+        $property = Get-ItemProperty -Path $registryPath -Name $key -ErrorAction Stop
+        Remove-ItemProperty -Path $registryPath -Name $key
+        Write-Host "Removed registry key that are used to automatically logon the user: $key"
+    } catch {
+        Write-Verbose "Key $key does not exist."
+    }
+}
+
 # Define destination directory
 $destinationDir = $Env:ArcBoxVMDir
 
@@ -68,29 +91,7 @@ while ($true) {
 }
 
 Write-Output "All downloads completed."
-
-# Archive existing log file and create new one
-$logFilePath = "$Env:ArcBoxLogsDir\ArcServersLogonScript.log"
-if (Test-Path $logFilePath) {
-    $archivefile = "$Env:ArcBoxLogsDir\ArcServersLogonScript-" + (Get-Date -Format "yyyyMMddHHmmss")
-    Rename-Item -Path $logFilePath -NewName $archivefile -Force
-}
-
-Start-Transcript -Path $logFilePath -Force -ErrorAction SilentlyContinue
-
-# Remove registry keys that are used to automatically logon the user (only used for first-time setup)
-$registryPath = "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon"
-$keys = @("AutoAdminLogon", "DefaultUserName", "DefaultPassword")
-
-foreach ($key in $keys) {
-    try {
-        $property = Get-ItemProperty -Path $registryPath -Name $key -ErrorAction Stop
-        Remove-ItemProperty -Path $registryPath -Name $key
-        Write-Host "Removed registry key that are used to automatically logon the user: $key"
-    } catch {
-        Write-Verbose "Key $key does not exist."
-    }
-}
+dir 'F:\Virtual Machines\' -File | Select-Object Name, Length, LastWriteTime
 
 # Create Windows Terminal desktop shortcut
 $WshShell = New-Object -comObject WScript.Shell
