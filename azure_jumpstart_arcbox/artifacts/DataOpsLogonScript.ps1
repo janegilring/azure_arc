@@ -409,6 +409,8 @@ if ($null -ne (Get-ScheduledTask -TaskName "DataOpsLogonScript" -ErrorAction Sil
 
 Stop-Transcript
 
+exit
+
 Write-Header "Deploying Azure Arc Data Controllers on Kubernetes cluster"
 $clusters | Foreach-Object -ThrottleLimit 5 -Parallel {
     $cluster = $_
