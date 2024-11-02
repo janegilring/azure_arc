@@ -401,6 +401,14 @@ Stop-Transcript
 
 wt --% --maximized new-tab pwsh.exe -NoExit -Command Show-K8sPodStatus -kubeconfig "C:\Users\$Env:adminUsername\.kube\config-k3s-data" -clusterName 'k3s Cluster'; split-pane -p "PowerShell" pwsh.exe -NoExit -Command Show-K8sPodStatus -kubeconfig "C:\Users\$Env:USERNAME\.kube\config-aks" -clusterName 'AKS Cluster'; split-pane -H pwsh.exe -NoExit -Command Show-K8sPodStatus -kubeconfig "C:\Users\$Env:USERNAME\.kube\config-aksdr" -clusterName 'AKS-DR Cluster'
 
+# Removing the LogonScript Scheduled Task so it won't run on next reboot
+Write-Header "Removing Logon Task"
+if ($null -ne (Get-ScheduledTask -TaskName "DataOpsLogonScript" -ErrorAction SilentlyContinue)) {
+    Unregister-ScheduledTask -TaskName "DataOpsLogonScript" -Confirm:$false
+}
+
+Stop-Transcript
+
 Write-Header "Deploying Azure Arc Data Controllers on Kubernetes cluster"
 $clusters | Foreach-Object -ThrottleLimit 5 -Parallel {
     $cluster = $_
