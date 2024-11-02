@@ -177,6 +177,16 @@ if ($Env:flavor -ne "DevOps") {
         Rename-Item -Path "$Env:ArcBoxVMDir\$vhdImageToDownload" -NewName  $SQLvmvhdPath -Force
     }
 
+    # Removing the LogonScript Scheduled Task so it won't run on next reboot
+    Write-Header "Removing Logon Task"
+    if ($null -ne (Get-ScheduledTask -TaskName "ArcServersLogonScript" -ErrorAction SilentlyContinue)) {
+        Unregister-ScheduledTask -TaskName "ArcServersLogonScript" -Confirm:$false
+    }
+
+    Stop-Transcript
+
+    exit
+
     # Create the nested VMs if not already created
     Write-Header "Create Hyper-V VMs"
 
