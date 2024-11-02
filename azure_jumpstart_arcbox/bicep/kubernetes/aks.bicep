@@ -1,5 +1,5 @@
 @description('The name of the Kubernetes cluster resource')
-param aksClusterName string = '${namingPrefix}-AKS-Data'
+param aksClusterName string = 'OpsCluster'
 
 @description('The name of the Kubernetes cluster resource')
 param drClusterName string = '${namingPrefix}-AKS-DR-Data'
