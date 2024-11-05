@@ -191,9 +191,9 @@ $Action = New-ScheduledTaskAction -Execute $ScheduledTaskExecutable -Argument $H
 Register-ScheduledTask -TaskName "WinGetLogonScript" -Trigger $Trigger -User $adminUsername -Action $Action -RunLevel "Highest" -Force
 
 # Creating scheduled task for HCIBoxLogonScript.ps1
-Write-Host "Creating scheduled task for HCIBoxLogonScript.ps1"
-$Action = New-ScheduledTaskAction -Execute $ScheduledTaskExecutable -Argument $HCIPath\HCIBoxLogonScript.ps1
-Register-ScheduledTask -TaskName "HCIBoxLogonScript"  -User $adminUsername -Action $Action -RunLevel "Highest" -Force
+#Write-Host "Creating scheduled task for HCIBoxLogonScript.ps1"
+#$Action = New-ScheduledTaskAction -Execute $ScheduledTaskExecutable -Argument $HCIPath\HCIBoxLogonScript.ps1
+#Register-ScheduledTask -TaskName "HCIBoxLogonScript"  -User $adminUsername -Action $Action -RunLevel "Highest" -Force
 
 # Disable Edge 'First Run' Setup
 Write-Host "Configuring Microsoft Edge."
