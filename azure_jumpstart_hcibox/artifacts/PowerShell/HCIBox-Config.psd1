@@ -71,7 +71,7 @@
     FabricSwitch                         = "vSwitch-Fabric"
     FabricNIC                            = "FABRIC"
     ClusterVSwitchName                   = "hciSwitch"
-    ClusterName                          = "OperationsCls"
+    ClusterName                          = "tailwind-cluster"
     WACVMName                            = "AdminCenter"
     ClusterSharedVolumePath              = "C:\ClusterStorage\S2D_vDISK1"
     LCMDeployUsername                    = "HCIBoxDeployUser"
@@ -159,8 +159,8 @@
     WACport                              = 443
 
     # AKS and Resource bridge variables
-    rbCustomLocationName                 = "jumpstart"
-    AKSworkloadClusterName               = "hcibox-aks" # lowercase only
+    rbCustomLocationName                 = "chicago"
+    AKSworkloadClusterName               = "chicago-aks" # lowercase only
     AKSvnetname                          = "akshcivnet"
     AKSNodeStartIP                       = "10.10.0.101"
     AKSNodeEndIP                         = "10.10.0.199"
