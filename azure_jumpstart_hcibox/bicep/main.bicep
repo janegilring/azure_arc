@@ -47,6 +47,9 @@ param autoDeployClusterResource bool = false
 @description('Choice to enable automatic upgrade of Azure Arc enabled HCI cluster resource after the client VM deployment is complete. Only applicable when autoDeployClusterResource is true. Default is false.')
 param autoUpgradeClusterResource bool = false
 
+@description('Option to enable spot pricing for the HCIBox Client VM')
+param enableAzureSpotPricing bool = false
+
 var templateBaseUrl = 'https://raw.githubusercontent.com/${githubAccount}/azure_arc/${githubBranch}/azure_jumpstart_hcibox/'
 
 module mgmtArtifactsAndPolicyDeployment 'mgmt/mgmtArtifacts.bicep' = {
@@ -91,5 +94,6 @@ module hostDeployment 'host/host.bicep' = {
     rdpPort: rdpPort
     autoDeployClusterResource: autoDeployClusterResource
     autoUpgradeClusterResource: autoUpgradeClusterResource
+    enableAzureSpotPricing: enableAzureSpotPricing
   }
 }

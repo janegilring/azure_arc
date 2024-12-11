@@ -69,6 +69,9 @@ param autoDeployClusterResource bool = false
 @description('Choice to enable automatic upgrade of Azure Arc enabled HCI cluster resource after the client VM deployment is complete. Only applicable when autoDeployClusterResource is true. Default is false.')
 param autoUpgradeClusterResource bool = false
 
+@description('Option to enable spot pricing for the HCIBox Client VM')
+param enableAzureSpotPricing bool = false
+
 var encodedPassword = base64(windowsAdminPassword)
 var bastionName = 'HCIBox-Bastion'
 var publicIpAddressName = deployBastion == false ? '${vmName}-PIP' : '${bastionName}-PIP'
@@ -241,6 +244,11 @@ resource vm 'Microsoft.Compute/virtualMachines@2022-03-01' = {
         enableAutomaticUpdates: false
       }
     }
+    priority: enableAzureSpotPricing ? 'Spot' : 'Regular'
+    evictionPolicy: enableAzureSpotPricing ? 'Deallocate' : null
+    billingProfile: enableAzureSpotPricing ? {
+      maxPrice: -1
+    } : null
   }
 }
 
