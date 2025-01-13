@@ -169,8 +169,8 @@ if ($null -ne $tags) {
     $tags = @{"DeploymentProgress" = $DeploymentProgressString}
 }
 
-$null = Set-AzResourceGroup -ResourceGroupName $env:resourceGroup -Tag $tags
-$null = Set-AzResource -ResourceName $env:computername -ResourceGroupName $env:resourceGroup -ResourceType "microsoft.compute/virtualmachines" -Tag $tags -Force
+$null = Set-AzResourceGroup -ResourceGroupName $resourceGroup -Tag $tags
+$null = Set-AzResource -ResourceName $env:computername -ResourceGroupName $resourceGroup -ResourceType "microsoft.compute/virtualmachines" -Tag $tags -Force
 
 
 $KeyVault = Get-AzKeyVault -ResourceGroupName $resourceGroup
@@ -417,8 +417,8 @@ if ($null -ne $tags) {
     $tags = @{"DeploymentProgress" = $DeploymentProgressString}
 }
 
-$null = Set-AzResourceGroup -ResourceGroupName $env:resourceGroup -Tag $tags
-$null = Set-AzResource -ResourceName $env:computername -ResourceGroupName $env:resourceGroup -ResourceType "microsoft.compute/virtualmachines" -Tag $tags -Force
+$null = Set-AzResourceGroup -ResourceGroupName $resourceGroup -Tag $tags
+$null = Set-AzResource -ResourceName $env:computername -ResourceGroupName $resourceGroup -ResourceType "microsoft.compute/virtualmachines" -Tag $tags -Force
 
 
 if ($flavor -eq "ITPro") {
