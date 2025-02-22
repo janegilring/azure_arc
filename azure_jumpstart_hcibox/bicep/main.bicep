@@ -61,6 +61,13 @@ param zones string = '1'
 @description('Option to enable spot pricing for the HCIBox Client VM')
 param enableAzureSpotPricing bool = false
 
+@description('The size of the Virtual Machine')
+@allowed([
+  'Standard_E32s_v5'
+  'Standard_E32s_v6'
+])
+param vmSize string = 'Standard_E32s_v5'
+
 var templateBaseUrl = 'https://raw.githubusercontent.com/${githubAccount}/azure_arc/${githubBranch}/azure_jumpstart_hcibox/'
 
 module mgmtArtifactsAndPolicyDeployment 'mgmt/mgmtArtifacts.bicep' = {
@@ -108,5 +115,6 @@ module hostDeployment 'host/host.bicep' = {
     vmAutologon: vmAutologon
     zones: zones
     enableAzureSpotPricing: enableAzureSpotPricing
+    vmSize: vmSize
   }
 }
