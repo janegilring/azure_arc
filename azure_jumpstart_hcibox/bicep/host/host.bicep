@@ -72,6 +72,20 @@ param autoUpgradeClusterResource bool = false
 @description('Enable automatic logon into HCIBox Virtual Machine')
 param vmAutologon bool = false
 
+@description('The SKU of the VMs disk')
+param vmsDiskSku string = 'PremiumV2_LRS'
+
+@description('The availability zone for the Virtual Machine, public IP, and data disk for the ArcBox client VM')
+@allowed([
+  '1'
+  '2'
+  '3'
+])
+param zones string = '1'
+
+@description('Option to enable spot pricing for the HCIBox Client VM')
+param enableAzureSpotPricing bool = false
+
 var encodedPassword = base64(windowsAdminPassword)
 var bastionName = 'HCIBox-Bastion'
 var publicIpAddressName = deployBastion == false ? '${vmName}-PIP' : '${bastionName}-PIP'
@@ -102,6 +116,7 @@ resource networkInterface 'Microsoft.Network/networkInterfaces@2021-03-01' = {
 
 resource publicIpAddress 'Microsoft.Network/publicIpAddresses@2021-03-01' = if (deployBastion == false) {
   name: publicIpAddressName
+  zones: [zones]
   location: location
   properties: {
     publicIPAllocationMethod: 'Static'
@@ -109,7 +124,25 @@ resource publicIpAddress 'Microsoft.Network/publicIpAddresses@2021-03-01' = if (
     idleTimeoutInMinutes: 4
   }
   sku: {
-    name: 'Basic'
+    name: 'Standard'
+  }
+}
+
+resource vmDisk 'Microsoft.Compute/disks@2023-04-02' = {
+  location: location
+  name: '${vmName}-VMsDisk'
+  zones: [zones]
+  sku: {
+    name: vmsDiskSku
+  }
+  properties: {
+    creationData: {
+      createOption: 'Empty'
+    }
+    diskSizeGB: 1536
+    burstingEnabled: false
+    diskMBpsReadWrite: 1200
+    diskIOPSReadWrite: 40000
   }
 }
 
@@ -117,6 +150,7 @@ resource vm 'Microsoft.Compute/virtualMachines@2022-03-01' = {
   name: vmName
   location: location
   tags: resourceTags
+  zones: [zones]
   identity: {
     type: 'SystemAssigned'
   }
@@ -142,91 +176,10 @@ resource vm 'Microsoft.Compute/virtualMachines@2022-03-01' = {
       }
       dataDisks: [
         {
-          name: 'ASHCIHost001_DataDisk_0'
-          diskSizeGB: 256
-          createOption: 'Empty'
+          createOption: 'Attach'
           lun: 0
-          caching: 'None'
-          writeAcceleratorEnabled: false
           managedDisk: {
-            storageAccountType: 'Premium_LRS'
-          }
-        }
-        {
-          name: 'ASHCIHost001_DataDisk_1'
-          diskSizeGB: 256
-          createOption: 'Empty'
-          lun: 1
-          caching: 'None'
-          writeAcceleratorEnabled: false
-          managedDisk: {
-            storageAccountType: 'Premium_LRS'
-          }
-        }
-        {
-          name: 'ASHCIHost001_DataDisk_2'
-          diskSizeGB: 256
-          createOption: 'Empty'
-          lun: 2
-          caching: 'None'
-          writeAcceleratorEnabled: false
-          managedDisk: {
-            storageAccountType: 'Premium_LRS'
-          }
-        }
-        {
-          name: 'ASHCIHost001_DataDisk_3'
-          diskSizeGB: 256
-          createOption: 'Empty'
-          lun: 3
-          caching: 'None'
-          writeAcceleratorEnabled: false
-          managedDisk: {
-            storageAccountType: 'Premium_LRS'
-          }
-        }
-        {
-          name: 'ASHCIHost001_DataDisk_4'
-          diskSizeGB: 256
-          createOption: 'Empty'
-          lun: 4
-          caching: 'None'
-          writeAcceleratorEnabled: false
-          managedDisk: {
-            storageAccountType: 'Premium_LRS'
-          }
-        }
-        {
-          name: 'ASHCIHost001_DataDisk_5'
-          diskSizeGB: 256
-          createOption: 'Empty'
-          lun: 5
-          caching: 'None'
-          writeAcceleratorEnabled: false
-          managedDisk: {
-            storageAccountType: 'Premium_LRS'
-          }
-        }
-        {
-          name: 'ASHCIHost001_DataDisk_6'
-          diskSizeGB: 256
-          createOption: 'Empty'
-          lun: 6
-          caching: 'None'
-          writeAcceleratorEnabled: false
-          managedDisk: {
-            storageAccountType: 'Premium_LRS'
-          }
-        }
-        {
-          name: 'ASHCIHost001_DataDisk_7'
-          diskSizeGB: 256
-          createOption: 'Empty'
-          lun: 7
-          caching: 'None'
-          writeAcceleratorEnabled: false
-          managedDisk: {
-            storageAccountType: 'Premium_LRS'
+            id: vmDisk.id
           }
         }
       ]
@@ -247,6 +200,11 @@ resource vm 'Microsoft.Compute/virtualMachines@2022-03-01' = {
         enableAutomaticUpdates: false
       }
     }
+    priority: enableAzureSpotPricing ? 'Spot' : 'Regular'
+    evictionPolicy: enableAzureSpotPricing ? 'Deallocate' : null
+    billingProfile: enableAzureSpotPricing ? {
+      maxPrice: -1
+    } : null
   }
 }
 
