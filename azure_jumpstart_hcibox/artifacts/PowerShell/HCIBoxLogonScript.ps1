@@ -118,6 +118,7 @@ foreach ($extension in $HCIBoxConfig.VSCodeExtensions) {
 # Configure virtualization infrastructure
 #####################################################################
 
+<# Disable when testing on a physical machine
 # Configure storage pools and data disks
 Write-Header "Configuring storage"
 New-StoragePool -FriendlyName AsHciPool -StorageSubSystemFriendlyName '*storage*' -PhysicalDisks (Get-PhysicalDisk -CanPool $true)
@@ -131,6 +132,7 @@ if ($vDisk | Get-Disk | Where-Object PartitionStyle -eq 'raw') {
 elseif ($vDisk | Get-Disk | Where-Object PartitionStyle -eq 'GPT') {
     $vDisk | Get-Disk | New-Partition -DriveLetter $HCIBoxConfig.HostVMDriveLetter -UseMaximumSize | Format-Volume -NewFileSystemLabel AsHciData -AllocationUnitSize 64KB -FileSystem NTFS
 }
+#>
 
 Stop-Transcript
 
