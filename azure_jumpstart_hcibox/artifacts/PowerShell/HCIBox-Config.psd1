@@ -35,26 +35,26 @@
         'ms-kubernetes-tools.vscode-kubernetes-tools'
     )
 
-    HostVMDriveLetter = "V"
-    HostVMPath        = "V:\VMs"                              # This value controls the path where the Nested VMs will be stored on all hosts.
+    HostVMDriveLetter = "C"
+    HostVMPath        = "C:\VMs"                              # This value controls the path where the Nested VMs will be stored on all hosts.
     guiVHDXPath       = "C:\HCIBox\VHD\gui.vhdx"              # This value controls the location of the GUI VHDX.
     azsHCIVHDXPath    = "C:\HCIBox\VHD\azshci.vhdx"           # This value controls the location of the Azure Stack HCI VHDX. \
 
     MgmtHostConfig = @{
         Hostname = "AzSMGMT"
-        IP       = "192.168.1.11/24"
+        IP       = "192.168.0.11/24"
     }
 
     NodeHostConfig = @(
         @{
             Hostname    = "AzSHOST1"
-            IP          = "192.168.1.12/24"
+            IP          = "192.168.0.12/24"
             StorageAIP  = "10.71.1.10"
             StorageBIP  = "10.71.2.10"
         },
         @{
             Hostname    = "AzSHOST2"
-            IP          = "192.168.1.13/24"
+            IP          = "192.168.0.13/24"
             StorageAIP  = "10.71.1.11"
             StorageBIP  = "10.71.2.11"
         }
@@ -64,9 +64,9 @@
     SDNAdminPassword                     = '%staging-password%'                  # Do not change - this value is replaced during Bootstrap with the password supplied in the ARM deployment
 
     # VM Configuration
-    NestedVMMemoryinGB                   = 96GB                                 # This value controls the amount of RAM for each Nested Hyper-V Host (AzSHOST1-2).
-    AzSMGMTMemoryinGB                    = 28GB                                  # This value controls the amount of RAM for the AzSMGMT Nested VM which contains only the Console, Router, Admincenter, and DC VMs.
-    AzSMGMTProcCount                     = 20
+    NestedVMMemoryinGB                   = 6GB                                 # This value controls the amount of RAM for each Nested Hyper-V Host (AzSHOST1-2).
+    AzSMGMTMemoryinGB                    = 10GB                                  # This value controls the amount of RAM for the AzSMGMT Nested VM which contains only the Console, Router, Admincenter, and DC VMs.
+    AzSMGMTProcCount                     = 8
     InternalSwitch                       = "InternalSwitch"                      # Name of internal switch that the HCIBox VMs will use in Single Host mode.
     FabricSwitch                         = "vSwitch-Fabric"
     FabricNIC                            = "FABRIC"
@@ -112,22 +112,22 @@
     S2D_Disk_Size                        = 170GB                                    # Disk size for each of the 4 dynamic VHD disks attached to the 3 AzSHOST VMs that will be used to create the SDNCLUSTER
 
     # Physical Host Internal IP
-    PhysicalHostInternalIP               = "192.168.1.20"                          # IP Address assigned to Internal Switch vNIC in a Single Host Configuration
+    PhysicalHostInternalIP               = "192.168.0.20"                          # IP Address assigned to Internal Switch vNIC in a Single Host Configuration
 
     # SDN Lab DNS
-    SDNLABDNS                            = "192.168.1.254"
+    SDNLABDNS                            = "192.168.0.254"
 
     # SDN Lab Gateway
-    SDNLABRoute                          = "192.168.1.1"
+    SDNLABRoute                          = "192.168.0.1"
 
     # Management IPs for Console and Domain Controller
-    DCIP                                 = "192.168.1.254/24"
-    WACIP                                = "192.168.1.9/24"
+    DCIP                                 = "192.168.0.254/24"
+    WACIP                                = "192.168.0.9/24"
     WACMAC                               = "10155D010B00"
 
     # Router Config
     BGPRouterName                        = "vm-router"
-    BGPRouterIP_MGMT                     = "192.168.1.1/24"
+    BGPRouterIP_MGMT                     = "192.168.0.1/24"
     BGPRouterIP_ProviderNetwork          = "172.16.0.1/24"
     BGPRouterIP_VLAN110                  = "10.10.0.1/24"
     BGPRouterIP_VLAN200                  = "192.168.200.1/24"
@@ -144,7 +144,7 @@
     StorageBVLAN                         = 712
 
     # Subnets
-    MGMTSubnet                           = "192.168.1.0/24"
+    MGMTSubnet                           = "192.168.0.0/24"
     storageAsubnet                       = "255.255.255.0"
     storageBsubnet                       = "255.255.255.0"
 
@@ -169,7 +169,7 @@
     AKSIPPrefix                          = "10.10.0.0/24"
     AKSControlPlaneIP                    = "10.10.0.5"
     AKSGWIP                              = "10.10.0.1"
-    AKSDNSIP                             = "192.168.1.254"
+    AKSDNSIP                             = "192.168.0.254"
     AKSVLAN                              = "110"
     # rbVipStart                           = "192.168.200.200"
     # rbVipEnd                             = "192.168.200.249"
@@ -177,10 +177,10 @@
     # rbDHCPExclusionEnd                   = "192.168.200.209"
     dcVLAN200IP                          = "192.168.200.205"
     rbSubnetMask                         = "255.255.255.0"
-    clusterIpRangeStart                  = "192.168.1.100"
-    clusterIpRangeEnd                    = "192.168.1.199"
+    clusterIpRangeStart                  = "192.168.0.100"
+    clusterIpRangeEnd                    = "192.168.0.199"
     vmGateway                            = "192.168.200.1"
     vmIpPrefix                           = "192.168.200.0/24"
-    vmDNS                                = "192.168.1.254"
+    vmDNS                                = "192.168.0.254"
     vmVLAN                               = "200"
 }
