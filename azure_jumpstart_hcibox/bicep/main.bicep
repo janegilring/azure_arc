@@ -66,6 +66,9 @@ param tags object = {
   Project: 'jumpstart_HCIBox'
 }
 
+@description('Set to true if deploying on physical hardware')
+param physicalDeployment bool = false
+
 // if governResourceTags is true, add the following tags
 var resourceTags = governResourceTags ? union(tags, {
     CostControl: 'Ignore'
@@ -84,7 +87,8 @@ module mgmtArtifactsAndPolicyDeployment 'mgmt/mgmtArtifacts.bicep' = {
   }
 }
 
-module networkDeployment 'network/network.bicep' = {
+
+module networkDeployment 'network/network.bicep' = if (!physicalDeployment) {
   name: 'networkDeployment'
   params: {
     deployBastion: deployBastion
@@ -101,7 +105,7 @@ module storageAccountDeployment 'mgmt/storageAccount.bicep' = {
   }
 }
 
-module hostDeployment 'host/host.bicep' = {
+module hostDeployment 'host/host.bicep' = if (!physicalDeployment) {
   name: 'hostVmDeployment'
   params: {
     vmSize: vmSize
