@@ -130,7 +130,15 @@ Write-Host "[Build cluster - Step 5/11] Starting VMs..." -ForegroundColor Green
 Write-Host "Starting VM: $($LocalBoxConfig.MgmtHostConfig.Hostname)"
 Start-VM -Name $LocalBoxConfig.MgmtHostConfig.Hostname
 foreach ($VM in $LocalBoxConfig.NodeHostConfig) {
+
+    if (!$IsAzureDeployment) {
+
+        Get-VM $VM.Hostname | Set-VMProcessor -Count 8
+
+    }
+
     Write-Host "Starting VM: $($VM.Hostname)"
+
     Start-VM -Name $VM.Hostname
 }
 
