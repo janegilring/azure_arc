@@ -11,8 +11,10 @@ $LocalBoxConfig = Import-PowerShellDataFile -Path $Env:LocalBoxConfigFile
 
 Start-Transcript -Path "$($LocalBoxConfig.Paths.LogsDir)\LocalBoxLogonScript.log"
 
-# Login to Azure PowerShell
-Connect-AzAccount -Identity -Tenant $Env:tenantId -Subscription $Env:subscriptionId
+if ($IsAzureDeployment) {
+    # Login to Azure PowerShell
+    Connect-AzAccount -Identity -Tenant $Env:tenantId -Subscription $Env:subscriptionId
+}
 
 #####################################################################
 # Add RBAC permissions
@@ -80,18 +82,20 @@ foreach ($extension in $LocalBoxConfig.VSCodeExtensions) {
 # Configure virtualization infrastructure
 #####################################################################
 
-# Configure storage pools and data disks
-Write-Header "Configuring storage"
-New-StoragePool -FriendlyName AzLocalPool -StorageSubSystemFriendlyName '*storage*' -PhysicalDisks (Get-PhysicalDisk -CanPool $true)
-$disks = Get-StoragePool -FriendlyName AzLocalPool -IsPrimordial $False | Get-PhysicalDisk
-$diskNum = $disks.Count
-New-VirtualDisk -StoragePoolFriendlyName AzLocalPool -FriendlyName AzLocalDisk -ResiliencySettingName Simple -NumberOfColumns $diskNum -UseMaximumSize
-$vDisk = Get-VirtualDisk -FriendlyName AzLocalDisk
-if ($vDisk | Get-Disk | Where-Object PartitionStyle -eq 'raw') {
-    $vDisk | Get-Disk | Initialize-Disk -Passthru | New-Partition -DriveLetter $LocalBoxConfig.HostVMDriveLetter -UseMaximumSize | Format-Volume -NewFileSystemLabel AzLocalData -AllocationUnitSize 64KB -FileSystem NTFS
-}
-elseif ($vDisk | Get-Disk | Where-Object PartitionStyle -eq 'GPT') {
-    $vDisk | Get-Disk | New-Partition -DriveLetter $LocalBoxConfig.HostVMDriveLetter -UseMaximumSize | Format-Volume -NewFileSystemLabel AzLocalData -AllocationUnitSize 64KB -FileSystem NTFS
+if ($IsAzureDeployment) {
+    # Configure storage pools and data disks
+    Write-Header "Configuring storage"
+    New-StoragePool -FriendlyName AzLocalPool -StorageSubSystemFriendlyName '*storage*' -PhysicalDisks (Get-PhysicalDisk -CanPool $true)
+    $disks = Get-StoragePool -FriendlyName AzLocalPool -IsPrimordial $False | Get-PhysicalDisk
+    $diskNum = $disks.Count
+    New-VirtualDisk -StoragePoolFriendlyName AzLocalPool -FriendlyName AzLocalDisk -ResiliencySettingName Simple -NumberOfColumns $diskNum -UseMaximumSize
+    $vDisk = Get-VirtualDisk -FriendlyName AzLocalDisk
+    if ($vDisk | Get-Disk | Where-Object PartitionStyle -eq 'raw') {
+        $vDisk | Get-Disk | Initialize-Disk -Passthru | New-Partition -DriveLetter $LocalBoxConfig.HostVMDriveLetter -UseMaximumSize | Format-Volume -NewFileSystemLabel AzLocalData -AllocationUnitSize 64KB -FileSystem NTFS
+    }
+    elseif ($vDisk | Get-Disk | Where-Object PartitionStyle -eq 'GPT') {
+        $vDisk | Get-Disk | New-Partition -DriveLetter $LocalBoxConfig.HostVMDriveLetter -UseMaximumSize | Format-Volume -NewFileSystemLabel AzLocalData -AllocationUnitSize 64KB -FileSystem NTFS
+    }
 }
 
 Stop-Transcript

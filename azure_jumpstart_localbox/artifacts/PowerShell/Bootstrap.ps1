@@ -64,6 +64,27 @@ if ($vmAutologon -eq "true") {
 
 }
 
+$IsAzureDeployment = $false
+
+try {
+    $metadataUri = "http://169.254.169.254/metadata/instance?api-version=2021-02-01"
+    $headers = @{ "Metadata" = "true" }
+
+    $response = Invoke-RestMethod -Uri $metadataUri -Headers $headers -Method GET -NoProxy -TimeoutSec 3
+
+    if ($null -ne $response) {
+        $IsAzureDeployment = $true
+    }
+}
+catch {
+    # Optionally log the error for troubleshooting
+    Write-Verbose "Not running in Azure or failed to reach IMDS: $_"
+    $IsAzureDeployment = $false
+}
+
+# Output result
+Write-Host "IsAzureDeployment: $IsAzureDeployment"
+
 #######################################################################
 ## Setup basic environment
 #######################################################################
@@ -96,9 +117,12 @@ Start-Transcript -Path "$($LocalBoxConfig.Paths["LogsDir"])\Bootstrap.log"
 #################################################################################
 ## Setup host infrastructure and apps
 #################################################################################
-# Extending C:\ partition to the maximum size
-Write-Host "Extending C:\ partition to the maximum size"
-Resize-Partition -DriveLetter C -Size $(Get-PartitionSupportedSize -DriveLetter C).SizeMax
+
+if ($IsAzureDeployment) {
+  # Extending C:\ partition to the maximum size
+  Write-Host "Extending C:\ partition to the maximum size"
+  Resize-Partition -DriveLetter C -Size $(Get-PartitionSupportedSize -DriveLetter C).SizeMax
+}
 
 Write-Host "Downloading Azure Local configuration scripts"
 Invoke-WebRequest "https://raw.githubusercontent.com/Azure/arc_jumpstart_docs/main/img/wallpaper/localbox_wallpaper_dark.png" -OutFile $LocalBoxPath\wallpaper.png
@@ -125,8 +149,10 @@ Write-Host "Updating config placeholders with injected values."
 (Get-Content -Path $LocalBoxPath\LocalBox-Config.psd1) -replace '%staging-password%', $adminPassword | Set-Content -Path $LocalBoxPath\LocalBox-Config.psd1
 (Get-Content -Path $LocalBoxPath\LocalBox-Config.psd1) -replace '%staging-natDNS%', $natDNS | Set-Content -Path $LocalBoxPath\LocalBox-Config.psd1
 
-# Installing PowerShell Modules
-Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force
+if ($IsAzureDeployment) {
+  # Installing PowerShell Modules
+  Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force
+}
 
 Write-Host "Installing PowerShell modules..."
 
@@ -137,7 +163,15 @@ foreach ($module in $modules) {
     Install-PSResource -Name $module -Scope AllUsers -Quiet -AcceptLicense -TrustRepository
 }
 
-Connect-AzAccount -Identity
+if ($IsAzureDeployment) {
+
+  Connect-AzAccount -Identity
+
+} else {
+
+  Connect-AzAccount -UseDeviceAuthentication -Subscription $subscriptionId -Tenant $tenantId
+
+}
 
 $DeploymentProgressString = "Started bootstrap-script..."
 
