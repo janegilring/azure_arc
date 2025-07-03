@@ -388,6 +388,10 @@ Add-MpPreference -ExclusionProcess  "%systemroot%\System32\Vmwp.exe"
 Add-MpPreference -ExclusionProcess  "%systemroot%\System32\Vmsp.exe"
 Add-MpPreference -ExclusionProcess  "%systemroot%\System32\Vmcompute.exe"
 
+if (!$IsAzureDeployment) {
+  Start-ScheduledTask -TaskName "WinGetLogonScript"
+}
+
 # Clean up Bootstrap.log
 Write-Header "Clean up Bootstrap.log."
 Stop-Transcript
