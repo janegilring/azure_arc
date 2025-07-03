@@ -486,6 +486,15 @@ if ($Env:flavor -ne 'DevOps') {
         (Get-Content -Path $serversDscConfigurationFile) -replace 'namingPrefixStage', $namingPrefix | Set-Content -Path $serversDscConfigurationFile
         winget configure --file C:\ArcBox\DSC\virtual_machines_itpro.dsc.yml --accept-configuration-agreements --disable-interactivity
 
+    # Configure automatic start & stop action for the nested VMs
+    Get-VM | Where-Object {$_.State -eq "Running"} |
+        ForEach-Object -Parallel {
+            Stop-VM -Force -Name $PSItem.Name
+            Set-VM -Name $PSItem.Name -AutomaticStopAction ShutDown -AutomaticStartAction Start
+            Start-VM -Name $PSItem.Name
+        }
+    Start-Sleep -Seconds 30
+
         Write-Header 'Creating VM Credentials'
         # Hard-coded username and password for the nested VMs
         $nestedLinuxUsername = 'jumpstart'
@@ -545,6 +554,7 @@ if ($Env:flavor -ne 'DevOps') {
         # Automatically accept unseen keys but will refuse connections for changed or invalid hostkeys.
         Add-Content -Path "$Env:USERPROFILE\.ssh\config" -Value 'StrictHostKeyChecking=accept-new'
 
+        Get-VM *Ubuntu*  | Wait-VM -For Heartbeat
         Get-VM *Ubuntu* | Copy-VMFile -SourcePath "$Env:TEMP\authorized_keys" -DestinationPath "/home/$nestedLinuxUsername/.ssh/" -FileSource Host -Force -CreateFullPath
 
         if ($namingPrefix -ne 'ArcBox') {
