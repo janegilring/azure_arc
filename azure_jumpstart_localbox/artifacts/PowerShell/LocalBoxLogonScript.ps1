@@ -11,6 +11,24 @@ $LocalBoxConfig = Import-PowerShellDataFile -Path $Env:LocalBoxConfigFile
 
 Start-Transcript -Path "$($LocalBoxConfig.Paths.LogsDir)\LocalBoxLogonScript.log"
 
+$IsAzureDeployment = $false
+
+try {
+    $metadataUri = "http://169.254.169.254/metadata/instance?api-version=2021-02-01"
+    $headers = @{ "Metadata" = "true" }
+
+    $response = Invoke-RestMethod -Uri $metadataUri -Headers $headers -Method GET -NoProxy -TimeoutSec 3
+
+    if ($null -ne $response) {
+        $IsAzureDeployment = $true
+    }
+}
+catch {
+    # Optionally log the error for troubleshooting
+    Write-Verbose "Not running in Azure or failed to reach IMDS: $_"
+    $IsAzureDeployment = $false
+}
+
 if ($IsAzureDeployment) {
     # Login to Azure PowerShell
     Connect-AzAccount -Identity -Tenant $Env:tenantId -Subscription $Env:subscriptionId

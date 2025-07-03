@@ -9,7 +9,27 @@ $logFilePath = Join-Path -Path $Env:LocalBoxLogsDir -ChildPath ('WinGet-provisio
 
 Start-Transcript -Path $logFilePath -Force -ErrorAction SilentlyContinue
 
-Update-AzDeploymentProgressTag -ProgressString 'Installing WinGet packages...' -ResourceGroupName $env:resourceGroup -ComputerName $env:computername
+$IsAzureDeployment = $false
+
+try {
+    $metadataUri = "http://169.254.169.254/metadata/instance?api-version=2021-02-01"
+    $headers = @{ "Metadata" = "true" }
+
+    $response = Invoke-RestMethod -Uri $metadataUri -Headers $headers -Method GET -NoProxy -TimeoutSec 3
+
+    if ($null -ne $response) {
+        $IsAzureDeployment = $true
+    }
+}
+catch {
+    # Optionally log the error for troubleshooting
+    Write-Verbose "Not running in Azure or failed to reach IMDS: $_"
+    $IsAzureDeployment = $false
+}
+
+if ($IsAzureDeployment) {
+    Update-AzDeploymentProgressTag -ProgressString 'Installing WinGet packages...' -ResourceGroupName $env:resourceGroup -ComputerName $env:computername
+}
 
 # Install WinGet PowerShell modules
 Install-PSResource -Name Microsoft.WinGet.Client -Scope AllUsers -Quiet -AcceptLicense -TrustRepository

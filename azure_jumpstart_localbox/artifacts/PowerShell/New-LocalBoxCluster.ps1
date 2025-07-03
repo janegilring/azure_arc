@@ -14,7 +14,9 @@ $resourceGroup = $env:resourceGroup
 
 Import-Module Hyper-V
 
+if ($IsAzureDeployment) {
 Update-AzDeploymentProgressTag -ProgressString 'Downloading nested VMs VHDX files' -ResourceGroupName $env:resourceGroup -ComputerName $env:computername
+}
 
 # Create paths
 foreach ($path in $LocalBoxConfig.Paths.GetEnumerator()) {
@@ -72,7 +74,9 @@ Enable-WSManCredSSP -Role Client -DelegateComputer "*.$($LocalBoxConfig.SDNDomai
 # Configure Hyper-V host
 ###############################################################################
 
-Update-AzDeploymentProgressTag -ProgressString 'Configure Hyper-V host' -ResourceGroupName $env:resourceGroup -ComputerName $env:computername
+if ($IsAzureDeployment) {
+    Update-AzDeploymentProgressTag -ProgressString 'Configure Hyper-V host' -ResourceGroupName $env:resourceGroup -ComputerName $env:computername
+}
 
 Write-Host "Checking internet connectivity"
 Test-InternetConnect
@@ -96,12 +100,15 @@ Copy-Item -Path $LocalBoxConfig.AzLocalVHDXPath -Destination $azlocalpath -Force
 # Create the three nested Virtual Machines
 ################################################################################
 
-Update-AzDeploymentProgressTag -ProgressString 'Creating and configuring nested VMs' -ResourceGroupName $env:resourceGroup -ComputerName $env:computername
-
+if ($IsAzureDeployment) {
+    Update-AzDeploymentProgressTag -ProgressString 'Creating and configuring nested VMs' -ResourceGroupName $env:resourceGroup -ComputerName $env:computername
+}
 # First create the Management VM (AzSMGMT)
 Write-Host "[Build cluster - Step 3/11] Creating Management VM (AzLMGMT)..." -ForegroundColor Green
 
-Update-AzDeploymentProgressTag -ProgressString 'Creating Management VM (AzLMGMT)' -ResourceGroupName $env:resourceGroup -ComputerName $env:computername
+if ($IsAzureDeployment) {
+    Update-AzDeploymentProgressTag -ProgressString 'Creating Management VM (AzLMGMT)' -ResourceGroupName $env:resourceGroup -ComputerName $env:computername
+}
 
 $mgmtMac = New-ManagementVM -Name $($LocalBoxConfig.MgmtHostConfig.Hostname) -VHDXPath "$HostVMPath\GUI.vhdx" -VMSwitch $InternalSwitch -LocalBoxConfig $LocalBoxConfig
 Set-MgmtVhdx -VMMac $mgmtMac -LocalBoxConfig $LocalBoxConfig
@@ -109,7 +116,9 @@ Set-MgmtVhdx -VMMac $mgmtMac -LocalBoxConfig $LocalBoxConfig
 # Create the Azure Local node VMs
 Write-Host "[Build cluster - Step 4/11] Creating Azure Local node VMs (AzLHOSTx)..." -ForegroundColor Green
 
-Update-AzDeploymentProgressTag -ProgressString 'Creating Azure Local node VMs (AzLHOSTx)' -ResourceGroupName $env:resourceGroup -ComputerName $env:computername
+if ($IsAzureDeployment) {
+    Update-AzDeploymentProgressTag -ProgressString 'Creating Azure Local node VMs (AzLHOSTx)' -ResourceGroupName $env:resourceGroup -ComputerName $env:computername
+}
 
 foreach ($VM in $LocalBoxConfig.NodeHostConfig) {
     $mac = New-AzLocalNodeVM -Name $VM.Hostname -VHDXPath $azlocalpath -VMSwitch $InternalSwitch -LocalBoxConfig $LocalBoxConfig
@@ -130,7 +139,9 @@ foreach ($VM in $LocalBoxConfig.NodeHostConfig) {
 #######################################################################################
 Write-Host "[Build cluster - Step 6/11] Configuring host networking and storage..." -ForegroundColor Green
 
-Update-AzDeploymentProgressTag -ProgressString 'Configuring host networking and storage...' -ResourceGroupName $env:resourceGroup -ComputerName $env:computername
+if ($IsAzureDeployment) {
+    Update-AzDeploymentProgressTag -ProgressString 'Configuring host networking and storage...' -ResourceGroupName $env:resourceGroup -ComputerName $env:computername
+}
 
 # Wait for AzSHOSTs to come online
 Test-AllVMsAvailable -LocalBoxConfig $LocalBoxConfig -Credential $localCred
@@ -153,18 +164,24 @@ Set-FabricNetwork -LocalBoxConfig $LocalBoxConfig -localCred $localCred -domainC
 # Provision the router, domain controller, and WAC VMs and join the hosts to the domain
 #######################################################################################
 
-Update-AzDeploymentProgressTag -ProgressString 'Provisioning Router VM' -ResourceGroupName $env:resourceGroup -ComputerName $env:computername
+if ($IsAzureDeployment) {
+    Update-AzDeploymentProgressTag -ProgressString 'Provisioning Router VM' -ResourceGroupName $env:resourceGroup -ComputerName $env:computername
+}
 
 # Provision Router VM on AzSMGMT
 Write-Host "[Build cluster - Step 7/11] Build router VM..." -ForegroundColor Green
 New-RouterVM -LocalBoxConfig $LocalBoxConfig -localCred $localCred
 
-Update-AzDeploymentProgressTag -ProgressString 'Provisioning Domain controller VM' -ResourceGroupName $env:resourceGroup -ComputerName $env:computername
+if ($IsAzureDeployment) {
+    Update-AzDeploymentProgressTag -ProgressString 'Provisioning Domain controller VM' -ResourceGroupName $env:resourceGroup -ComputerName $env:computername
+}
 
 # Provision Domain controller VM on AzSMGMT
 Write-Host "[Build cluster - Step 8/11] Building Domain Controller VM..." -ForegroundColor Green
 
-Update-AzDeploymentProgressTag -ProgressString 'Building Domain Controller VM...' -ResourceGroupName $env:resourceGroup -ComputerName $env:computername
+if ($IsAzureDeployment) {
+    Update-AzDeploymentProgressTag -ProgressString 'Building Domain Controller VM...' -ResourceGroupName $env:resourceGroup -ComputerName $env:computername
+}
 
 New-DCVM -LocalBoxConfig $LocalBoxConfig -localCred $localCred -domainCred $domainCred
 
@@ -174,7 +191,9 @@ New-DCVM -LocalBoxConfig $LocalBoxConfig -localCred $localCred -domainCred $doma
 
 Write-Host "[Build cluster - Step 9/11] Preparing Azure local cluster cloud deployment..." -ForegroundColor Green
 
-Update-AzDeploymentProgressTag -ProgressString 'Preparing Azure Local cluster deployment' -ResourceGroupName $env:resourceGroup -ComputerName $env:computername
+if ($IsAzureDeployment) {
+    Update-AzDeploymentProgressTag -ProgressString 'Preparing Azure Local cluster deployment' -ResourceGroupName $env:resourceGroup -ComputerName $env:computername
+}
 
 Invoke-AzureEdgeBootstrap -LocalBoxConfig $LocalBoxConfig -localCred $localCred
 
@@ -190,7 +209,9 @@ Write-Host "[Build cluster - Step 10/11] Validate cluster deployment..." -Foregr
 
 if ("True" -eq $env:autoDeployClusterResource) {
 
-Update-AzDeploymentProgressTag -ProgressString 'Validating Azure Local cluster deployment' -ResourceGroupName $env:resourceGroup -ComputerName $env:computername
+if ($IsAzureDeployment) {
+    Update-AzDeploymentProgressTag -ProgressString 'Validating Azure Local cluster deployment' -ResourceGroupName $env:resourceGroup -ComputerName $env:computername
+}
 
 $TemplateFile = Join-Path -Path $env:LocalBoxDir -ChildPath "azlocal.json"
 $TemplateParameterFile = Join-Path -Path $env:LocalBoxDir -ChildPath "azlocal.parameters.json"
@@ -251,7 +272,9 @@ if ($ClusterValidationDeployment.ProvisioningState -eq "Succeeded") {
 
         Write-Host "Deployment succeeded. Upgrading Local cluster..."
 
-        Update-AzDeploymentProgressTag -ProgressString 'Upgrading Azure Local cluster' -ResourceGroupName $env:resourceGroup -ComputerName $env:computername
+        if ($IsAzureDeployment) {
+            Update-AzDeploymentProgressTag -ProgressString 'Upgrading Azure Local cluster' -ResourceGroupName $env:resourceGroup -ComputerName $env:computername
+        }
 
         Update-AzLocalCluster -LocalBoxConfig $LocalBoxConfig -domainCred $domainCred
 
