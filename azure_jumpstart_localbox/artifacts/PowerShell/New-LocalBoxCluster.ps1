@@ -234,7 +234,7 @@ for ($attempt = 1; $attempt -le $maxAttempts; $attempt++) {
 
     try {
 
-        New-AzResourceGroupDeployment -Name 'localcluster-validate' -ResourceGroupName $env:resourceGroup -TemplateFile $TemplateFile -TemplateParameterFile $TemplateParameterFile -OutVariable ClusterValidationDeployment -ErrorAction Stop -WhatIf
+        New-AzResourceGroupDeployment -Name 'localcluster-validate' -ResourceGroupName $env:resourceGroup -TemplateFile $TemplateFile -TemplateParameterFile $TemplateParameterFile -OutVariable ClusterValidationDeployment -ErrorAction Stop
 
         Write-Host "✅ Cluster Validation completed successfully on attempt $attempt."
         break
