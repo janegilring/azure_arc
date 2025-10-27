@@ -194,14 +194,68 @@ if ("True" -eq $env:autoDeployClusterResource) {
 
 Update-AzDeploymentProgressTag -ProgressString 'Validating Azure Local cluster deployment' -ResourceGroupName $env:resourceGroup -ComputerName $env:computername
 
+function Wait-ConnectedMachineVisible {
+    param(
+        [string]$ResourceGroupName,
+        [string]$MachineName,
+        [int]$MaxWaitSeconds = 300,
+        [int]$PollSeconds = 10
+    )
+    $deadline = (Get-Date).AddSeconds($MaxWaitSeconds)
+    while ((Get-Date) -lt $deadline) {
+        $cm = Get-AzConnectedMachine -ResourceGroupName $ResourceGroupName -Name $MachineName -ErrorAction SilentlyContinue
+        if ($cm -and $cm.ProvisioningState -in 'Succeeded','Updating') {
+            Write-Host "ConnectedMachine $MachineName is present (ProvState=$($cm.ProvisioningState))."
+            return $true
+        }
+        Start-Sleep -Seconds $PollSeconds
+    }
+    return $false
+}
+
+
+
+foreach ($VM in $LocalBoxConfig.NodeHostConfig) {
+    Wait-ConnectedMachineVisible -ResourceGroupName $env:resourceGroup -MachineName $VM.Hostname
+}
+
 $TemplateFile = Join-Path -Path $env:LocalBoxDir -ChildPath "azlocal.json"
 $TemplateParameterFile = Join-Path -Path $env:LocalBoxDir -ChildPath "azlocal.parameters.json"
 
-try {
-    New-AzResourceGroupDeployment -Name 'localcluster-validate' -ResourceGroupName $env:resourceGroup -TemplateFile $TemplateFile -TemplateParameterFile $TemplateParameterFile -OutVariable ClusterValidationDeployment -ErrorAction Stop
-}
-catch {
-    Write-Output "Validation failed. Re-run New-AzResourceGroupDeployment to retry. Error: $($_.Exception.Message)"
+
+$maxAttempts   = 3
+$backoff       = 10    # seconds (first wait between attempts)
+$backoffFactor = 2.0   # exponential backoff multiplier
+$maxBackoff    = 60    # cap
+
+for ($attempt = 1; $attempt -le $maxAttempts; $attempt++) {
+
+    Write-Host "▶️  Cluster Validation attempt $attempt of $maxAttempts …"
+
+    try {
+
+        New-AzResourceGroupDeployment -Name 'localcluster-validate' -ResourceGroupName $env:resourceGroup -TemplateFile $TemplateFile -TemplateParameterFile $TemplateParameterFile -OutVariable ClusterValidationDeployment -ErrorAction Stop -WhatIf
+
+        Write-Host "✅ Cluster Validation completed successfully on attempt $attempt."
+        break
+    }
+    catch {
+        $err = $_.Exception.Message
+        Write-Warning "Validation failed on attempt $attempt : $err"
+
+        if ($attempt -lt $maxAttempts) {
+
+
+            $sleep = [Math]::Min([int]$backoff, [int]$maxBackoff)
+            Write-Host "⏳ Waiting $sleep seconds before retry …"
+            Start-Sleep -Seconds $sleep
+            $backoff = [Math]::Ceiling([double]$backoff * $backoffFactor)
+        }
+        else {
+            Write-Error "❌ Cluster Validation failed after $maxAttempts attempts. Last error: $err"
+            throw
+        }
+    }
 }
 
 
