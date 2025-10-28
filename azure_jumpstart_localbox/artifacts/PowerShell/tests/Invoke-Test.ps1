@@ -14,7 +14,7 @@ function Wait-AzDeployment {
         [Parameter(Mandatory = $true)]
         [string]$ClusterName,
 
-        [int]$TimeoutMinutes = 240  # Default timeout of 4 hours
+        [int]$TimeoutMinutes = 360  # Default timeout of 6 hours
     )
 
     $startTime = Get-Date
