@@ -232,9 +232,13 @@ for ($attempt = 1; $attempt -le $maxAttempts; $attempt++) {
 
     Write-Host "▶️  Cluster Validation attempt $attempt of $maxAttempts …"
 
+    # Generate unique deployment name to avoid conflicts with active deployments
+    $timestamp = Get-Date -Format "yyyyMMdd-HHmmss"
+    $deploymentName = "localcluster-validate-$timestamp-$attempt"
+
     try {
 
-        New-AzResourceGroupDeployment -Name 'localcluster-validate' -ResourceGroupName $env:resourceGroup -TemplateFile $TemplateFile -TemplateParameterFile $TemplateParameterFile -OutVariable ClusterValidationDeployment -ErrorAction Stop
+        New-AzResourceGroupDeployment -Name $deploymentName -ResourceGroupName $env:resourceGroup -TemplateFile $TemplateFile -TemplateParameterFile $TemplateParameterFile -OutVariable ClusterValidationDeployment -ErrorAction Stop
 
         Write-Host "✅ Cluster Validation completed successfully on attempt $attempt."
         break
@@ -243,8 +247,21 @@ for ($attempt = 1; $attempt -le $maxAttempts; $attempt++) {
         $err = $_.Exception.Message
         Write-Warning "Validation failed on attempt $attempt : $err"
 
-        if ($attempt -lt $maxAttempts) {
+        # Check if the error is due to an active deployment conflict
+        if ($err -like "*DeploymentActive*" -and $attempt -eq 1) {
+            Write-Host "🔍 Checking for conflicting active deployments..."
+            try {
+                $activeDeployments = Get-AzResourceGroupDeployment -ResourceGroupName $env:resourceGroup -Name 'localcluster-validate' -ErrorAction SilentlyContinue
+                if ($activeDeployments -and $activeDeployments.ProvisioningState -eq "Running") {
+                    Write-Host "⚠️  Found active deployment 'localcluster-validate'. Will use unique deployment names to avoid conflicts."
+                }
+            }
+            catch {
+                # Ignore errors when checking for deployments
+            }
+        }
 
+        if ($attempt -lt $maxAttempts) {
 
             $sleep = [Math]::Min([int]$backoff, [int]$maxBackoff)
             Write-Host "⏳ Waiting $sleep seconds before retry …"
@@ -296,8 +313,12 @@ if ($ClusterValidationDeployment.ProvisioningState -eq "Succeeded") {
 
     Write-Host "Validation succeeded. Deploying Local cluster..."
 
+    # Generate unique deployment name to avoid conflicts
+    $deployTimestamp = Get-Date -Format "yyyyMMdd-HHmmss"
+    $deploymentName = "localcluster-deploy-$deployTimestamp"
+
     try {
-        New-AzResourceGroupDeployment -Name 'localcluster-deploy' -ResourceGroupName $env:resourceGroup -TemplateFile $TemplateFile -deploymentMode "Deploy" -TemplateParameterFile $TemplateParameterFile -OutVariable ClusterDeployment -ErrorAction Stop
+        New-AzResourceGroupDeployment -Name $deploymentName -ResourceGroupName $env:resourceGroup -TemplateFile $TemplateFile -deploymentMode "Deploy" -TemplateParameterFile $TemplateParameterFile -OutVariable ClusterDeployment -ErrorAction Stop
     }
     catch {
         Write-Output "Deployment command failed. Re-run New-AzResourceGroupDeployment to retry. Error: $($_.Exception.Message)"
