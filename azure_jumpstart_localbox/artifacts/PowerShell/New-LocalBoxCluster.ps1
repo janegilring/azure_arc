@@ -198,30 +198,6 @@ if ("True" -eq $env:autoDeployClusterResource) {
 
 Update-AzDeploymentProgressTag -ProgressString 'Validating Azure Local cluster deployment' -ResourceGroupName $env:resourceGroup -ComputerName $env:computername
 
-function Wait-ConnectedMachineVisible {
-    param(
-        [string]$ResourceGroupName,
-        [string]$MachineName,
-        [int]$MaxWaitSeconds = 300,
-        [int]$PollSeconds = 10
-    )
-    $deadline = (Get-Date).AddSeconds($MaxWaitSeconds)
-    while ((Get-Date) -lt $deadline) {
-        $cm = Get-AzConnectedMachine -ResourceGroupName $ResourceGroupName -Name $MachineName -ErrorAction SilentlyContinue
-        if ($cm -and $cm.ProvisioningState -in 'Succeeded','Updating') {
-            Write-Host "ConnectedMachine $MachineName is present (ProvState=$($cm.ProvisioningState))."
-            return $true
-        }
-        Start-Sleep -Seconds $PollSeconds
-    }
-    return $false
-}
-
-
-
-foreach ($VM in $LocalBoxConfig.NodeHostConfig) {
-    Wait-ConnectedMachineVisible -ResourceGroupName $env:resourceGroup -MachineName $VM.Hostname
-}
 
 $TemplateFile = Join-Path -Path $env:LocalBoxDir -ChildPath "azlocal.json"
 $TemplateParameterFile = Join-Path -Path $env:LocalBoxDir -ChildPath "azlocal.parameters.json"
