@@ -1,4 +1,9 @@
-﻿Start-Transcript -Path $Env:LocalBoxLogsDir\New-LocalBoxCluster.log
+﻿if (Test-Path "$Env:LocalBoxDir\PausedBeforeArcRegistration.txt") {
+    Write-Warning 'LocalBox is already paused before Arc registration. Do not rebuild the nested VMs; follow the readiness runbook.'
+    return
+}
+
+Start-Transcript -Path $Env:LocalBoxLogsDir\New-LocalBoxCluster.log
 $starttime = Get-Date
 
 # Import Configuration data file
@@ -238,6 +243,15 @@ Write-Host "[Build cluster - Step 9/11] Preparing Azure local cluster cloud depl
 Update-AzDeploymentProgressTag -ProgressString 'Preparing Azure Local cluster deployment' -ResourceGroupName $env:resourceGroup -ComputerName $env:computername
 
 Invoke-AzureEdgeBootstrap -LocalBoxConfig $LocalBoxConfig -localCred $localCred
+
+if ('True' -eq $env:pauseBeforeArcRegistration) {
+    $pauseMessage = 'Paused before Arc registration. AD deployment objects are not yet prepared. Run standalone readiness checks, then explicitly register using the intended network path. Do not rerun LocalBoxLogonScript.ps1 or New-LocalBoxCluster.ps1.'
+    Set-Content -Path "$Env:LocalBoxDir\PausedBeforeArcRegistration.txt" -Value $pauseMessage -ErrorAction Stop
+    Update-AzDeploymentProgressTag -ProgressString 'PausedBeforeArcRegistration' -ResourceGroupName $env:resourceGroup -ComputerName $env:computername -ErrorAction Stop
+    Write-Host $pauseMessage -ForegroundColor Yellow
+    Stop-Transcript
+    return
+}
 
 Set-AzLocalDeployPrereqs -LocalBoxConfig $LocalBoxConfig -localCred $localCred -domainCred $domainCred
 

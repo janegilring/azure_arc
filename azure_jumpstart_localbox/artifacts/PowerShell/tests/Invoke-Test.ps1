@@ -1,5 +1,10 @@
 #Requires -Modules @{ ModuleName="Pester"; ModuleVersion="5.6.0"}
 
+if ('True' -eq $env:pauseBeforeArcRegistration) {
+    Write-Warning 'Post-deployment tests are not applicable while pauseBeforeArcRegistration is enabled. Run the standalone Environment Checker and verify nodes are not Arc registered.'
+    return
+}
+
 # Import Configuration data file
 $LocalBoxConfig = Import-PowerShellDataFile -Path $Env:LocalBoxConfigFile
 

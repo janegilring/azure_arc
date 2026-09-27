@@ -37,6 +37,9 @@ param rdpPort string = '3389'
 @description('Choice to enable automatic deployment of Azure Local cluster resource after the client VM deployment is complete. Default is false.')
 param autoDeployClusterResource bool = true
 
+@description('Stop after nested infrastructure and node bootstrap, before AD preparation, node Arc registration, and cluster validation/deployment. Use for standalone Environment Checker rehearsals.')
+param pauseBeforeArcRegistration bool = false
+
 @description('Choice to enable automatic upgrade of Azure Local cluster resource after the client VM deployment is complete. Only applicable when autoDeployClusterResource is true. Default is false.')
 param autoUpgradeClusterResource bool = false
 
@@ -131,6 +134,7 @@ module hostDeployment 'host/host.bicep' = {
     location: location
     rdpPort: rdpPort
     autoDeployClusterResource: autoDeployClusterResource
+    pauseBeforeArcRegistration: pauseBeforeArcRegistration
     autoUpgradeClusterResource: autoUpgradeClusterResource
     vmAutologon: vmAutologon
     resourceTags: resourceTags

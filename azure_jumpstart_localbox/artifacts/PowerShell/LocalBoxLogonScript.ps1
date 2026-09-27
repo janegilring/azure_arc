@@ -2,6 +2,11 @@
 $ProgressPreference = "SilentlyContinue"
 Set-PSDebug -Strict
 
+if (Test-Path "$Env:LocalBoxDir\PausedBeforeArcRegistration.txt") {
+    Write-Warning 'LocalBox is paused before Arc registration. Follow the readiness runbook instead of rerunning infrastructure setup.'
+    return
+}
+
 #####################################################################
 # Initialize the environment
 #####################################################################
@@ -138,7 +143,11 @@ Set-JSDesktopBackground -ImagePath "$Env:LocalBoxDir\wallpaper.bmp"
 
 Write-Header "Running tests to verify infrastructure"
 
-& "$Env:LocalBoxTestsDir\Invoke-Test.ps1"
+if ('True' -eq $env:pauseBeforeArcRegistration) {
+    Write-Host 'Skipping post-deployment tests: this lab intentionally stops before node Arc registration and cluster deployment.'
+} else {
+    & "$Env:LocalBoxTestsDir\Invoke-Test.ps1"
+}
 
 Write-Header "Creating deployment logs bundle"
 

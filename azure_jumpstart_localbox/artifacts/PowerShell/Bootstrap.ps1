@@ -16,6 +16,8 @@ param (
   [string]$rdpPort,
   [string]$autoDeployClusterResource,
   [string]$autoUpgradeClusterResource,
+  [ValidateSet('True', 'False')]
+  [string]$pauseBeforeArcRegistration = 'False',
   [string]$debugEnabled,
   [string]$vmAutologon
 )
@@ -36,6 +38,7 @@ $PSBoundParameters
 [System.Environment]::SetEnvironmentVariable('deployResourceBridge', $deployResourceBridge, [System.EnvironmentVariableTarget]::Machine)
 [System.Environment]::SetEnvironmentVariable('autoDeployClusterResource', $autoDeployClusterResource, [System.EnvironmentVariableTarget]::Machine)
 [System.Environment]::SetEnvironmentVariable('autoUpgradeClusterResource', $autoUpgradeClusterResource, [System.EnvironmentVariableTarget]::Machine)
+[System.Environment]::SetEnvironmentVariable('pauseBeforeArcRegistration', $pauseBeforeArcRegistration, [System.EnvironmentVariableTarget]::Machine)
 [System.Environment]::SetEnvironmentVariable('registerCluster', $registerCluster, [System.EnvironmentVariableTarget]::Machine)
 [System.Environment]::SetEnvironmentVariable('natDNS', $natDNS, [System.EnvironmentVariableTarget]::Machine)
 [System.Environment]::SetEnvironmentVariable('LocalBoxDir', "C:\LocalBox", [System.EnvironmentVariableTarget]::Machine)
